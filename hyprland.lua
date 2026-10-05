@@ -98,7 +98,6 @@ hl.config({
 
     groupbar = {
       height = 24,
-      font_family = "SF Pro Display",
       font_weight_active = "bold",
       indicator_height = 2,
       gradient_rounding = 8,
