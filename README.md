@@ -16,7 +16,21 @@ An authentic Apple macOS Sequoia theme for the **Omarchy Hyprland Desktop**, fea
 
 ---
 
-## Installation
+## Quick 1-Command Automatic Install (Recommended)
+
+To install everything automatically in one single command (theme, helper scripts, gestures, shortcuts, and spaces auto-clean daemon):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ayush-rdev/omarchy-macos-theme/master/install.sh | bash
+```
+
+*(Or if running from a local clone: `./install.sh`)*
+
+---
+
+## Manual Step-by-Step Installation
+
+If you prefer to configure things manually:
 
 ### 1. Install & Apply the Theme
 ```bash
