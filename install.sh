@@ -26,6 +26,27 @@ echo -e "${BLUE}==>${NC} Installing Apple SF Pro Display & SF Pro Text fonts..."
 if [[ -d "$THEME_DIR/fonts" ]]; then
   cp -f "$THEME_DIR/fonts/"* "$FONTS_DIR/"
   fc-cache -f "$FONTS_DIR" 2>/dev/null || true
+
+  # Set GTK/GNOME desktop interface fonts
+  gsettings set org.gnome.desktop.interface font-name 'SF Pro Display 11' 2>/dev/null || true
+  gsettings set org.gnome.desktop.interface document-font-name 'SF Pro Text 11' 2>/dev/null || true
+
+  # Set fontconfig system-wide fallback
+  mkdir -p "$HOME/.config/fontconfig"
+  cat << 'EOF' > "$HOME/.config/fontconfig/fonts.conf"
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <match target="pattern">
+    <test name="family" qual="any">
+      <string>sans-serif</string>
+    </test>
+    <edit name="family" mode="prepend_first" binding="strong">
+      <string>SF Pro Display</string>
+    </edit>
+  </match>
+</fontconfig>
+EOF
 fi
 
 # 3. Install all macOS helper scripts
