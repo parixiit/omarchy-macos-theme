@@ -8,6 +8,9 @@ import time
 
 STATE_FILE = "/tmp/hypr_macos_spaces_state.json"
 
+# Track history of visited workspaces [old, current]
+ws_history = []
+
 def get_state():
     if os.path.exists(STATE_FILE):
         try:
@@ -24,8 +27,19 @@ def save_state(state):
     except Exception:
         pass
 
+def on_workspace_change(new_ws_str):
+    global ws_history
+    try:
+        new_ws = int(new_ws_str)
+    except Exception:
+        return
+    if not ws_history or ws_history[-1] != new_ws:
+        ws_history.append(new_ws)
+        if len(ws_history) > 10:
+            ws_history.pop(0)
+
 def handle_close_window(closed_addr):
-    # Normalize address
+    global ws_history
     if not closed_addr.startswith("0x"):
         closed_addr = "0x" + closed_addr
 
@@ -33,8 +47,8 @@ def handle_close_window(closed_addr):
     orig_ws = state.pop(closed_addr, None)
     save_state(state)
 
-    # Allow Hyprland state to settle
-    time.sleep(0.05)
+    # Let Hyprland update internal window tree
+    time.sleep(0.08)
 
     try:
         clients = json.loads(subprocess.check_output(["hyprctl", "clients", "-j"], text=True))
@@ -43,13 +57,21 @@ def handle_close_window(closed_addr):
     except Exception:
         return
 
-    # Count how many windows remain on current workspace
+    # Count how many windows remain on the current workspace
     remaining = [c for c in clients if c.get("workspace", {}).get("id") == cur_ws_id]
 
     if len(remaining) == 0:
-        # Current workspace is completely empty!
-        # Target destination:
+        # Current workspace is now empty!
         target = orig_ws
+
+        # If no tracked original space, look at workspace history
+        if target is None:
+            # Find the most recently visited workspace that still has windows (or is workspace 1)
+            for prev in reversed(ws_history):
+                if prev != cur_ws_id:
+                    target = prev
+                    break
+
         if target is None:
             # Fallback to nearest populated workspace or workspace 1
             populated = sorted(list({c.get("workspace", {}).get("id") for c in clients if c.get("workspace", {}).get("id", 0) > 0}))
@@ -62,6 +84,7 @@ def handle_close_window(closed_addr):
             subprocess.run(["hyprctl", "dispatch", f"hl.dsp.focus({{ workspace = '{target}' }})"])
 
 def main():
+    global ws_history
     xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
     his = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
     if not his:
@@ -77,6 +100,13 @@ def main():
     if not os.path.exists(sock_path):
         sys.exit(1)
 
+    # Initialize current workspace in history
+    try:
+        active_ws_info = json.loads(subprocess.check_output(["hyprctl", "activeworkspace", "-j"], text=True))
+        ws_history.append(active_ws_info.get("id"))
+    except Exception:
+        ws_history.append(1)
+
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(sock_path)
 
@@ -91,7 +121,13 @@ def main():
             line = line.strip()
             if not line:
                 continue
-            if line.startswith("closewindow>>"):
+            if line.startswith("workspacev2>>"):
+                # workspacev2>>id,name
+                parts = line.split(">>", 1)[1].split(",")
+                on_workspace_change(parts[0])
+            elif line.startswith("workspace>>"):
+                on_workspace_change(line.split(">>", 1)[1])
+            elif line.startswith("closewindow>>"):
                 closed_addr = line.split(">>", 1)[1].strip()
                 handle_close_window(closed_addr)
 
