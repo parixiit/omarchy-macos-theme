@@ -95,7 +95,25 @@ hl.gesture({
 EOF
 fi
 
+# 5. Setup macOS "Shake to Find" Dynamic Cursor
+PLUGINS_DIR="$HOME/.config/hypr/plugins"
+mkdir -p "$PLUGINS_DIR"
+if [[ -f "$THEME_DIR/plugins/dynamic-cursors.so" ]]; then
+  echo -e "${BLUE}==>${NC} Installing macOS Dynamic Cursor (Shake to Find)..."
+  cp -f "$THEME_DIR/plugins/dynamic-cursors.so" "$PLUGINS_DIR/dynamic-cursors.so"
+
+  HYPR_MAIN="$HOME/.config/hypr/hyprland.lua"
+  if [[ -f "$HYPR_MAIN" ]] && ! grep -q "dynamic-cursors.so" "$HYPR_MAIN"; then
+    cat << 'EOF' >> "$HYPR_MAIN"
+
+-- Load dynamic cursor plugin for macOS-like shake to find
+hl.plugin.load(os.getenv("HOME") .. "/.config/hypr/plugins/dynamic-cursors.so")
+EOF
+  fi
+  hyprctl plugin load "$PLUGINS_DIR/dynamic-cursors.so" 2>/dev/null || true
+fi
+
 # Reload Hyprland
 hyprctl reload >/dev/null 2>&1 || true
 
-echo -e "${GREEN}==>${NC} macOS Sequoia Theme, gestures, shortcuts, and spaces setup complete! 🎉"
+echo -e "${GREEN}==>${NC} macOS Sequoia Theme, gestures, shortcuts, spaces daemon, and dynamic cursor setup complete! 🎉"
