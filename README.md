@@ -8,6 +8,7 @@ An authentic Apple macOS Sequoia theme for the **Omarchy Hyprland Desktop**, fea
 
 ## What's Included
 
+* **Apple SF Pro Fonts**: Bundles authentic Apple **SF Pro Display** & **SF Pro Text** typography across UI elements, topbar, window titles, and menus.
 * **Authentic macOS Glass Rim Borders**: 1px subtle Retina translucent glass hairline reflection (`rgba(ffffff28)`) that blends naturally with wide 36px macOS drop shadows.
 * **Apple Spring & Deceleration Physics**: Custom fluid cubic-bezier curves (`macEase`, `macSpring`, `macSpace`) matching macOS Mission Control and Spaces transitions.
 * **macOS "Shake to Find" Dynamic Cursor**: Enlarge cursor on rapid mouse shake, smoothly scaling down back to normal size (powered by `dynamic-cursors`).

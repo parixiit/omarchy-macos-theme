@@ -18,9 +18,17 @@ omarchy theme set macos
 THEME_DIR="$HOME/.config/omarchy/themes/macos"
 BIN_DIR="$HOME/.local/bin"
 SYSTEMD_USER_DIR="$HOME/.config/systemd/user"
-mkdir -p "$BIN_DIR" "$SYSTEMD_USER_DIR"
+FONTS_DIR="$HOME/.local/share/fonts/apple-sf-pro"
+mkdir -p "$BIN_DIR" "$SYSTEMD_USER_DIR" "$FONTS_DIR"
 
-# 2. Install all macOS helper scripts
+# 2. Install Apple SF Pro Display & SF Pro Text Fonts
+echo -e "${BLUE}==>${NC} Installing Apple SF Pro Display & SF Pro Text fonts..."
+if [[ -d "$THEME_DIR/fonts" ]]; then
+  cp -f "$THEME_DIR/fonts/"* "$FONTS_DIR/"
+  fc-cache -f "$FONTS_DIR" 2>/dev/null || true
+fi
+
+# 3. Install all macOS helper scripts
 echo -e "${BLUE}==>${NC} Installing macOS helper scripts to $BIN_DIR..."
 if [[ -d "$THEME_DIR/scripts" ]]; then
   cp -f "$THEME_DIR/scripts/"* "$BIN_DIR/"
