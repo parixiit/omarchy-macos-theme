@@ -110,6 +110,39 @@ if [[ -f "$THEME_DIR/plugins/dynamic-cursors.so" ]]; then
 hl.plugin.load(os.getenv("HOME") .. "/.config/hypr/plugins/dynamic-cursors.so")
 EOF
   fi
+
+  HYPR_LOOK="$HOME/.config/hypr/looknfeel.lua"
+  if [[ -f "$HYPR_LOOK" ]] && ! grep -q "dynamic_cursors" "$HYPR_LOOK"; then
+    cat << 'EOF' >> "$HYPR_LOOK"
+
+-- macOS "Shake to Find" Cursor Magnification (Zero wobble/tilt, pure enlargement)
+hl.config({
+  plugin = {
+    dynamic_cursors = {
+      enabled = true,
+      mode = "none", -- Strictly "none" to disable all tilt/wobble/rotation effects
+      shake = {
+        enabled = true,
+        threshold = 5.0,  -- Trigger sensitivity
+        base = 3.5,       -- Initial magnification when shaken
+        speed = 4.0,      -- Growth speed while shaking continues
+        limit = 5.5,      -- Maximum cursor size
+        timeout = 1000,   -- Milliseconds before shrinking back
+        effects = false,  -- Explicitly false to prevent wobbling or distortions
+        ipc = false,
+      },
+      hyprcursor = {
+        enabled = true,
+        nearest = true,
+        resolution = -1,
+        fallback = "clientside",
+      },
+    },
+  },
+})
+EOF
+  fi
+
   hyprctl plugin load "$PLUGINS_DIR/dynamic-cursors.so" 2>/dev/null || true
 fi
 
